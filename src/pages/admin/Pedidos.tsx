@@ -32,7 +32,11 @@ interface Order {
   cancel_reason: string | null;
   notes: string | null;
   created_at: string;
+  driver_id: string | null;
+  delivered_at: string | null;
 }
+
+interface Driver { id: string; name: string; phone: string | null; is_active: boolean }
 
 interface OrderItem { id: string; product_name: string; quantity: number; unit_price: number; total: number; variations: any; addons: any; notes: string | null }
 
@@ -52,11 +56,13 @@ export default function Pedidos() {
   const { profile, user } = useAuth();
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [selected, setSelected] = useState<Order | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [estimatedMin, setEstimatedMin] = useState("");
+  const [selectedDriverId, setSelectedDriverId] = useState("");
   const [loading, setLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const prevCountRef = useRef(0);
@@ -65,11 +71,10 @@ export default function Pedidos() {
 
   const fetchOrders = useCallback(async () => {
     if (!companyId) return;
-    const { data } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("company_id", companyId)
-      .order("created_at", { ascending: false });
+    const [{ data }, { data: drvs }] = await Promise.all([
+      supabase.from("orders").select("*").eq("company_id", companyId).order("created_at", { ascending: false }),
+      supabase.from("drivers").select("*").eq("company_id", companyId).eq("is_active", true).order("name"),
+    ]);
     const newOrders = (data ?? []) as Order[];
     
     // Alert for new orders
@@ -80,6 +85,7 @@ export default function Pedidos() {
     prevCountRef.current = newCount;
     
     setOrders(newOrders);
+    setDrivers((drvs ?? []) as Driver[]);
     setLoading(false);
   }, [companyId, toast]);
 
@@ -108,7 +114,15 @@ export default function Pedidos() {
   };
 
   const updateStatus = async (orderId: string, fromStatus: OrderStatus, toStatus: OrderStatus) => {
-    await supabase.from("orders").update({ status: toStatus, estimated_minutes: toStatus === "em_preparo" && estimatedMin ? Number(estimatedMin) : undefined }).eq("id", orderId);
+    const updatePayload: any = { status: toStatus };
+    if (toStatus === "em_preparo" && estimatedMin) updatePayload.estimated_minutes = Number(estimatedMin);
+    if (toStatus === "saiu_entrega" && selectedDriverId) {
+      updatePayload.driver_id = selectedDriverId;
+    }
+    if (toStatus === "concluido" && fromStatus === "saiu_entrega") {
+      updatePayload.delivered_at = new Date().toISOString();
+    }
+    await supabase.from("orders").update(updatePayload).eq("id", orderId);
     await supabase.from("order_status_history").insert({
       order_id: orderId,
       from_status: fromStatus,
@@ -116,8 +130,9 @@ export default function Pedidos() {
       changed_by: user?.id,
     });
     toast({ title: `Pedido movido para ${statusConfig.find((s) => s.id === toStatus)?.label}` });
-    if (selected?.id === orderId) setSelected((prev) => prev ? { ...prev, status: toStatus } : null);
+    if (selected?.id === orderId) setSelected((prev) => prev ? { ...prev, status: toStatus, driver_id: selectedDriverId || prev.driver_id } : null);
     setEstimatedMin("");
+    setSelectedDriverId("");
   };
 
   const handleCancel = async () => {
@@ -254,6 +269,25 @@ export default function Pedidos() {
               <div>
                 <Label>Tempo estimado (min)</Label>
                 <Input type="number" placeholder="30" value={estimatedMin} onChange={(e) => setEstimatedMin(e.target.value)} />
+              </div>
+            )}
+
+            {/* Driver assignment when sending for delivery */}
+            {selected.status === "pronto" && selected.type === "entrega" && drivers.length > 0 && (
+              <div>
+                <Label>Atribuir entregador</Label>
+                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={selectedDriverId} onChange={(e) => setSelectedDriverId(e.target.value)}>
+                  <option value="">Selecione o entregador</option>
+                  {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </select>
+              </div>
+            )}
+
+            {/* Show assigned driver */}
+            {selected.driver_id && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">Entregador: </span>
+                <span className="font-medium">{drivers.find((d) => d.id === selected.driver_id)?.name ?? "—"}</span>
               </div>
             )}
 

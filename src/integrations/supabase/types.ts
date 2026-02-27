@@ -144,6 +144,113 @@ export type Database = {
           },
         ]
       }
+      cash_closings: {
+        Row: {
+          closed_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          manual_balance: number | null
+          notes: string | null
+          payment_breakdown: Json | null
+          period_end: string
+          period_start: string
+          total_balance: number
+          total_entries: number
+          total_exits: number
+        }
+        Insert: {
+          closed_by?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          manual_balance?: number | null
+          notes?: string | null
+          payment_breakdown?: Json | null
+          period_end: string
+          period_start: string
+          total_balance?: number
+          total_entries?: number
+          total_exits?: number
+        }
+        Update: {
+          closed_by?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          manual_balance?: number | null
+          notes?: string | null
+          payment_breakdown?: Json | null
+          period_end?: string
+          period_start?: string
+          total_balance?: number
+          total_entries?: number
+          total_exits?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_closings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_transactions: {
+        Row: {
+          amount: number
+          category: string
+          company_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          order_id: string | null
+          payment_method: string | null
+          type: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          order_id?: string | null
+          payment_method?: string | null
+          type: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          order_id?: string | null
+          payment_method?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           company_id: string
@@ -324,6 +431,7 @@ export type Database = {
       }
       coupons: {
         Row: {
+          category_id: string | null
           code: string
           company_id: string
           created_at: string
@@ -334,8 +442,11 @@ export type Database = {
           id: string
           is_active: boolean
           max_uses: number | null
+          max_uses_per_customer: number | null
+          min_order_value: number | null
         }
         Insert: {
+          category_id?: string | null
           code: string
           company_id: string
           created_at?: string
@@ -346,8 +457,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          max_uses_per_customer?: number | null
+          min_order_value?: number | null
         }
         Update: {
+          category_id?: string | null
           code?: string
           company_id?: string
           created_at?: string
@@ -358,8 +472,17 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          max_uses_per_customer?: number | null
+          min_order_value?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "coupons_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "coupons_company_id_fkey"
             columns: ["company_id"]
@@ -542,8 +665,10 @@ export type Database = {
           created_at: string
           customer_name: string
           customer_whatsapp: string
+          delivered_at: string | null
           delivery_fee: number
           discount: number
+          driver_id: string | null
           estimated_minutes: number | null
           id: string
           neighborhood_id: string | null
@@ -566,8 +691,10 @@ export type Database = {
           created_at?: string
           customer_name: string
           customer_whatsapp: string
+          delivered_at?: string | null
           delivery_fee?: number
           discount?: number
+          driver_id?: string | null
           estimated_minutes?: number | null
           id?: string
           neighborhood_id?: string | null
@@ -590,8 +717,10 @@ export type Database = {
           created_at?: string
           customer_name?: string
           customer_whatsapp?: string
+          delivered_at?: string | null
           delivery_fee?: number
           discount?: number
+          driver_id?: string | null
           estimated_minutes?: number | null
           id?: string
           neighborhood_id?: string | null
@@ -617,6 +746,13 @@ export type Database = {
             columns: ["coupon_id"]
             isOneToOne: false
             referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
             referencedColumns: ["id"]
           },
           {
