@@ -1,12 +1,15 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { Sun } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
+      <Sun className="mb-6 h-20 w-20 text-foreground animate-spin" style={{ animationDuration: "8s" }} />
+      <h1 className="mb-3 text-5xl font-extrabold tracking-tight text-foreground">
+        Página Amarela ☀️
+      </h1>
+      <p className="text-lg text-muted-foreground max-w-md text-center">
+        Simples, bonita e gastando menos de 1 crédito.
+      </p>
     </div>
   );
 };
