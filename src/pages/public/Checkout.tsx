@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Neighborhood { id: string; name: string; fee: number; estimated_time: string | null }
@@ -17,7 +17,7 @@ export default function Checkout() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { items, subtotal, discount, clearCart } = useCart();
+  const { items, subtotal, discount, setDiscount, couponCode, setCouponCode, clearCart } = useCart();
 
   const [companyId, setCompanyId] = useState<string>("");
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
@@ -31,8 +31,17 @@ export default function Checkout() {
   const [changeFor, setChangeFor] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Coupon state
+  const [couponInput, setCouponInput] = useState(couponCode);
+  const [couponId, setCouponId] = useState<string | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponLabel, setCouponLabel] = useState("");
+  const [isFreeDelivery, setIsFreeDelivery] = useState(false);
+
   const selectedNeighborhood = neighborhoods.find((n) => n.id === neighborhoodId);
-  const deliveryFee = orderType === "entrega" ? Number(selectedNeighborhood?.fee ?? 0) : 0;
+  const rawDeliveryFee = orderType === "entrega" ? Number(selectedNeighborhood?.fee ?? 0) : 0;
+  const deliveryFee = isFreeDelivery ? 0 : rawDeliveryFee;
   const total = subtotal + deliveryFee - discount;
 
   useEffect(() => {
@@ -46,6 +55,46 @@ export default function Checkout() {
     };
     load();
   }, [slug]);
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim() || !companyId) return;
+    setCouponLoading(true); setCouponError(""); setCouponLabel(""); setDiscount(0); setIsFreeDelivery(false); setCouponId(null);
+    
+    const { data: coupon } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("code", couponInput.trim().toUpperCase())
+      .eq("is_active", true)
+      .single();
+
+    if (!coupon) { setCouponError("Cupom não encontrado ou inativo"); setCouponLoading(false); return; }
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) { setCouponError("Cupom expirado"); setCouponLoading(false); return; }
+    if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) { setCouponError("Cupom esgotado"); setCouponLoading(false); return; }
+    if (coupon.min_order_value && subtotal < Number(coupon.min_order_value)) {
+      setCouponError(`Pedido mínimo: R$ ${Number(coupon.min_order_value).toFixed(2).replace(".", ",")}`);
+      setCouponLoading(false); return;
+    }
+
+    setCouponId(coupon.id);
+    setCouponCode(couponInput.trim().toUpperCase());
+
+    if (coupon.discount_type === "percent") {
+      const d = subtotal * (Number(coupon.discount_value) / 100);
+      setDiscount(d); setCouponLabel(`-${coupon.discount_value}%`);
+    } else if (coupon.discount_type === "fixed") {
+      setDiscount(Number(coupon.discount_value)); setCouponLabel(`-R$ ${Number(coupon.discount_value).toFixed(2).replace(".", ",")}`);
+    } else if (coupon.discount_type === "free_delivery") {
+      setIsFreeDelivery(true); setCouponLabel("Frete grátis");
+    }
+    
+    setCouponLoading(false);
+    toast({ title: "Cupom aplicado!" });
+  };
+
+  const removeCoupon = () => {
+    setCouponInput(""); setCouponCode(""); setCouponId(null); setDiscount(0); setIsFreeDelivery(false); setCouponLabel(""); setCouponError("");
+  };
 
   const handleSubmit = async () => {
     if (!name.trim() || !whatsapp.trim()) {
@@ -75,9 +124,18 @@ export default function Checkout() {
         address: orderType === "entrega" ? address.trim() : null,
         neighborhood_id: orderType === "entrega" ? neighborhoodId : null,
         address_reference: orderType === "entrega" ? addressRef.trim() || null : null,
+        coupon_id: couponId,
       }).select("id, order_number").single();
 
       if (error) throw error;
+
+      // Increment coupon uses
+      if (couponId) {
+        const { data: cpn } = await supabase.from("coupons").select("current_uses").eq("id", couponId).single();
+        if (cpn) {
+          await supabase.from("coupons").update({ current_uses: cpn.current_uses + 1 }).eq("id", couponId);
+        }
+      }
 
       const orderItems = items.map((item) => ({
         order_id: order.id,
@@ -174,12 +232,44 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
+        {/* Cupom */}
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Tag className="h-4 w-4" />Cupom de desconto</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {couponLabel ? (
+              <div className="flex items-center justify-between bg-success/10 rounded-lg p-3">
+                <div>
+                  <span className="font-mono font-bold text-sm">{couponCode}</span>
+                  <span className="text-sm text-success ml-2">{couponLabel}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={removeCoupon}>Remover</Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input placeholder="Código do cupom" value={couponInput} onChange={(e) => setCouponInput(e.target.value)} className="uppercase" />
+                <Button variant="outline" onClick={applyCoupon} disabled={couponLoading}>{couponLoading ? "..." : "Aplicar"}</Button>
+              </div>
+            )}
+            {couponError && <p className="text-xs text-destructive">{couponError}</p>}
+          </CardContent>
+        </Card>
+
         {/* Resumo */}
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-base">Resumo</CardTitle></CardHeader>
           <CardContent className="space-y-1 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>R$ {subtotal.toFixed(2).replace(".", ",")}</span></div>
-            {orderType === "entrega" && <div className="flex justify-between"><span className="text-muted-foreground">Taxa de entrega</span><span>R$ {deliveryFee.toFixed(2).replace(".", ",")}</span></div>}
+            {orderType === "entrega" && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Taxa de entrega</span>
+                <span className={isFreeDelivery ? "line-through text-muted-foreground" : ""}>
+                  R$ {rawDeliveryFee.toFixed(2).replace(".", ",")}
+                </span>
+              </div>
+            )}
+            {isFreeDelivery && orderType === "entrega" && (
+              <div className="flex justify-between"><span className="text-success text-xs">Frete grátis aplicado</span><span className="text-success">-R$ {rawDeliveryFee.toFixed(2).replace(".", ",")}</span></div>
+            )}
             {discount > 0 && <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span className="text-success">-R$ {discount.toFixed(2).replace(".", ",")}</span></div>}
             <Separator />
             <div className="flex justify-between font-bold text-base"><span>Total</span><span>R$ {total.toFixed(2).replace(".", ",")}</span></div>
