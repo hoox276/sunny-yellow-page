@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ArrowLeft, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useRateLimit } from "@/hooks/useRateLimit";
 
 interface Neighborhood { id: string; name: string; fee: number; estimated_time: string | null }
 
@@ -30,6 +31,7 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "dinheiro" | "cartao_entrega">("pix");
   const [changeFor, setChangeFor] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { checkLimit } = useRateLimit(3000, 5, 120000);
 
   // Coupon state
   const [couponInput, setCouponInput] = useState(couponCode);
@@ -97,8 +99,22 @@ export default function Checkout() {
   };
 
   const handleSubmit = async () => {
-    if (!name.trim() || !whatsapp.trim()) {
-      toast({ title: "Preencha nome e WhatsApp", variant: "destructive" });
+    // Rate limit check
+    const limit = checkLimit();
+    if (!limit.allowed) {
+      toast({ title: limit.message ?? "Aguarde antes de tentar novamente.", variant: "destructive" });
+      return;
+    }
+
+    // Input validation
+    const trimmedName = name.trim();
+    const trimmedWhatsapp = whatsapp.trim().replace(/\D/g, "");
+    if (!trimmedName || trimmedName.length < 2 || trimmedName.length > 100) {
+      toast({ title: "Nome inválido (2-100 caracteres)", variant: "destructive" });
+      return;
+    }
+    if (trimmedWhatsapp.length < 10 || trimmedWhatsapp.length > 13) {
+      toast({ title: "WhatsApp inválido", variant: "destructive" });
       return;
     }
     if (orderType === "entrega" && (!address.trim() || !neighborhoodId)) {
@@ -111,8 +127,8 @@ export default function Checkout() {
     try {
       const { data: order, error } = await supabase.from("orders").insert({
         company_id: companyId,
-        customer_name: name.trim(),
-        customer_whatsapp: whatsapp.trim(),
+        customer_name: trimmedName.slice(0, 100),
+        customer_whatsapp: trimmedWhatsapp.slice(0, 13),
         type: orderType,
         status: "novo",
         subtotal,
