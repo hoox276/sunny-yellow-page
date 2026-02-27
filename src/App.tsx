@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import { AdminLayout } from "@/layouts/AdminLayout";
 import { SuperAdminLayout } from "@/layouts/SuperAdminLayout";
 import { PublicLayout } from "@/layouts/PublicLayout";
@@ -41,6 +42,9 @@ import Perfil from "./pages/shared/Perfil";
 
 // Public
 import CardapioPublico from "./pages/public/CardapioPublico";
+import Carrinho from "./pages/public/Carrinho";
+import Checkout from "./pages/public/Checkout";
+import PedidoConfirmacao from "./pages/public/PedidoConfirmacao";
 
 const queryClient = new QueryClient();
 
@@ -51,49 +55,54 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Landing */}
-            <Route path="/" element={<Index />} />
+          <CartProvider>
+            <Routes>
+              {/* Landing */}
+              <Route path="/" element={<Index />} />
 
-            {/* Auth */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/cadastro" element={<Cadastro />} />
-            <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+              {/* Auth */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/cadastro" element={<Cadastro />} />
+              <Route path="/recuperar-senha" element={<RecuperarSenha />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Admin da Loja */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="cardapio" element={<Cardapio />} />
-              <Route path="pedidos" element={<Pedidos />} />
-              <Route path="clientes" element={<Clientes />} />
-              <Route path="entregas" element={<Entregas />} />
-              <Route path="caixa" element={<Caixa />} />
-              <Route path="promocoes" element={<Promocoes />} />
-              <Route path="configuracoes" element={<Configuracoes />} />
-              <Route path="usuarios" element={<UsuariosLoja />} />
-              <Route path="perfil" element={<Perfil />} />
-            </Route>
+              {/* Admin da Loja */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="cardapio" element={<Cardapio />} />
+                <Route path="pedidos" element={<Pedidos />} />
+                <Route path="clientes" element={<Clientes />} />
+                <Route path="entregas" element={<Entregas />} />
+                <Route path="caixa" element={<Caixa />} />
+                <Route path="promocoes" element={<Promocoes />} />
+                <Route path="configuracoes" element={<Configuracoes />} />
+                <Route path="usuarios" element={<UsuariosLoja />} />
+                <Route path="perfil" element={<Perfil />} />
+              </Route>
 
-            {/* Super Admin */}
-            <Route path="/superadmin" element={<SuperAdminLayout />}>
-              <Route index element={<SuperDashboard />} />
-              <Route path="empresas" element={<Empresas />} />
-              <Route path="usuarios" element={<Usuarios />} />
-              <Route path="financeiro" element={<FinanceiroSA />} />
-              <Route path="auditoria" element={<Auditoria />} />
-              <Route path="permissoes" element={<Permissoes />} />
-              <Route path="configuracoes" element={<SuperConfiguracoes />} />
-              <Route path="perfil" element={<Perfil />} />
-            </Route>
+              {/* Super Admin */}
+              <Route path="/superadmin" element={<SuperAdminLayout />}>
+                <Route index element={<SuperDashboard />} />
+                <Route path="empresas" element={<Empresas />} />
+                <Route path="usuarios" element={<Usuarios />} />
+                <Route path="financeiro" element={<FinanceiroSA />} />
+                <Route path="auditoria" element={<Auditoria />} />
+                <Route path="permissoes" element={<Permissoes />} />
+                <Route path="configuracoes" element={<SuperConfiguracoes />} />
+                <Route path="perfil" element={<Perfil />} />
+              </Route>
 
-            {/* Cardápio público */}
-            <Route element={<PublicLayout />}>
-              <Route path="/menu/:slug" element={<CardapioPublico />} />
-            </Route>
+              {/* Cardápio público */}
+              <Route element={<PublicLayout />}>
+                <Route path="/menu/:slug" element={<CardapioPublico />} />
+                <Route path="/menu/:slug/carrinho" element={<Carrinho />} />
+                <Route path="/menu/:slug/checkout" element={<Checkout />} />
+                <Route path="/menu/:slug/pedido/:orderId" element={<PedidoConfirmacao />} />
+              </Route>
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </CartProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
