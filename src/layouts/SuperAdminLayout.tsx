@@ -1,16 +1,16 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { AdminHeader } from "@/components/admin/AdminHeader";
+import { SuperAdminSidebar } from "@/components/superadmin/SuperAdminSidebar";
+import { SuperAdminHeader } from "@/components/superadmin/SuperAdminHeader";
 import { Outlet } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
-export function AdminLayout() {
+export function SuperAdminLayout() {
   return (
-    <ProtectedRoute>
+    <ProtectedRoute requireSuperAdmin>
       <SidebarProvider>
-        <AdminSidebar />
+        <SuperAdminSidebar />
         <SidebarInset>
-          <AdminHeader />
+          <SuperAdminHeader />
           <main className="flex-1 p-6">
             <Outlet />
           </main>

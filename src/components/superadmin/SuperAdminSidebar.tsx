@@ -15,51 +15,52 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
-  UtensilsCrossed,
-  ShoppingBag,
+  Building2,
   Users,
+  Shield,
+  FileText,
   Settings,
-  Truck,
-  Printer,
-  QrCode,
   LogOut,
-  Store,
+  Zap,
   UserCircle,
+  DollarSign,
 } from "lucide-react";
 
 const menuItems = [
-  { title: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { title: "Cardápio", icon: UtensilsCrossed, path: "/admin/cardapio" },
-  { title: "Pedidos", icon: ShoppingBag, path: "/admin/pedidos" },
-  { title: "Clientes", icon: Users, path: "/admin/clientes" },
-  { title: "Entregas", icon: Truck, path: "/admin/entregas" },
-  { title: "Impressão", icon: Printer, path: "/admin/impressao" },
-  { title: "QR Code", icon: QrCode, path: "/admin/qrcode" },
+  { title: "Dashboard", icon: LayoutDashboard, path: "/superadmin" },
+  { title: "Empresas", icon: Building2, path: "/superadmin/empresas" },
+  { title: "Usuários", icon: Users, path: "/superadmin/usuarios" },
+  { title: "Financeiro", icon: DollarSign, path: "/superadmin/financeiro" },
+  { title: "Auditoria", icon: FileText, path: "/superadmin/auditoria" },
 ];
 
 const systemItems = [
-  { title: "Configurações", icon: Settings, path: "/admin/configuracoes" },
-  { title: "Meu Perfil", icon: UserCircle, path: "/admin/perfil" },
+  { title: "Permissões", icon: Shield, path: "/superadmin/permissoes" },
+  { title: "Configurações", icon: Settings, path: "/superadmin/configuracoes" },
+  { title: "Meu Perfil", icon: UserCircle, path: "/superadmin/perfil" },
 ];
 
-export function AdminSidebar() {
+export function SuperAdminSidebar() {
   const location = useLocation();
-  const { signOut, profile } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link to="/admin" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Store className="h-4 w-4 text-primary-foreground" />
+        <Link to="/superadmin" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive">
+            <Zap className="h-4 w-4 text-destructive-foreground" />
           </div>
-          <span className="text-lg font-bold font-['Space_Grotesk']">MenuRápido</span>
+          <div>
+            <span className="text-lg font-bold font-['Space_Grotesk']">MenuRápido</span>
+            <span className="ml-1 text-[10px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">SUPER</span>
+          </div>
         </Link>
       </SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
