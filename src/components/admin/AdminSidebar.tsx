@@ -20,31 +20,33 @@ import {
   Users,
   Settings,
   Truck,
-  Printer,
-  QrCode,
   LogOut,
   Store,
   UserCircle,
+  DollarSign,
+  Tag,
+  UsersRound,
 } from "lucide-react";
 
 const menuItems = [
   { title: "Dashboard", icon: LayoutDashboard, path: "/admin" },
-  { title: "Cardápio", icon: UtensilsCrossed, path: "/admin/cardapio" },
   { title: "Pedidos", icon: ShoppingBag, path: "/admin/pedidos" },
+  { title: "Cardápio", icon: UtensilsCrossed, path: "/admin/cardapio" },
   { title: "Clientes", icon: Users, path: "/admin/clientes" },
   { title: "Entregas", icon: Truck, path: "/admin/entregas" },
-  { title: "Impressão", icon: Printer, path: "/admin/impressao" },
-  { title: "QR Code", icon: QrCode, path: "/admin/qrcode" },
+  { title: "Caixa", icon: DollarSign, path: "/admin/caixa" },
+  { title: "Promoções", icon: Tag, path: "/admin/promocoes" },
 ];
 
 const systemItems = [
   { title: "Configurações", icon: Settings, path: "/admin/configuracoes" },
+  { title: "Usuários", icon: UsersRound, path: "/admin/usuarios" },
   { title: "Meu Perfil", icon: UserCircle, path: "/admin/perfil" },
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
-  const { signOut, profile } = useAuth();
+  const { signOut } = useAuth();
 
   return (
     <Sidebar>

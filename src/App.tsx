@@ -22,9 +22,10 @@ import Cardapio from "./pages/admin/Cardapio";
 import Pedidos from "./pages/admin/Pedidos";
 import Clientes from "./pages/admin/Clientes";
 import Entregas from "./pages/admin/Entregas";
-import Impressao from "./pages/admin/Impressao";
-import QRCodePage from "./pages/admin/QRCode";
+import Caixa from "./pages/admin/Caixa";
+import Promocoes from "./pages/admin/Promocoes";
 import Configuracoes from "./pages/admin/Configuracoes";
+import UsuariosLoja from "./pages/admin/UsuariosLoja";
 
 // Super Admin pages
 import SuperDashboard from "./pages/superadmin/SuperDashboard";
@@ -67,9 +68,10 @@ const App = () => (
               <Route path="pedidos" element={<Pedidos />} />
               <Route path="clientes" element={<Clientes />} />
               <Route path="entregas" element={<Entregas />} />
-              <Route path="impressao" element={<Impressao />} />
-              <Route path="qrcode" element={<QRCodePage />} />
+              <Route path="caixa" element={<Caixa />} />
+              <Route path="promocoes" element={<Promocoes />} />
               <Route path="configuracoes" element={<Configuracoes />} />
+              <Route path="usuarios" element={<UsuariosLoja />} />
               <Route path="perfil" element={<Perfil />} />
             </Route>
 
