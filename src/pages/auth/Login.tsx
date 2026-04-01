@@ -35,7 +35,7 @@ export default function Login() {
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <Store className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-xl font-['Space_Grotesk']">Menu</CardTitle>
+          <CardTitle className="text-xl font-['Space_Grotesk']">Entrar</CardTitle>
           <CardDescription>Acesse sua conta</CardDescription>
         </CardHeader>
         <CardContent>
