@@ -30,12 +30,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm bg-green-100">
+      <Card className="w-full max-w-sm bg-red-100">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <Store className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="text-xl font-['Space_Grotesk']">MenuRápido</CardTitle>
+          <CardTitle className="text-xl font-['Space_Grotesk']">Menu</CardTitle>
           <CardDescription>Acesse sua conta</CardDescription>
         </CardHeader>
         <CardContent>

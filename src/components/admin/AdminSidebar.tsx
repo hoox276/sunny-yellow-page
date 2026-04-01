@@ -55,7 +55,7 @@ export function AdminSidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <Store className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold font-['Space_Grotesk']">MenuRápido</span>
+          <span className="text-lg font-bold font-['Space_Grotesk']">Menu</span>
         </Link>
       </SidebarHeader>
       <SidebarSeparator />

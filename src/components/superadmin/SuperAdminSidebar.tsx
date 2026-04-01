@@ -52,7 +52,7 @@ export function SuperAdminSidebar() {
             <Zap className="h-4 w-4 text-destructive-foreground" />
           </div>
           <div>
-            <span className="text-lg font-bold font-['Space_Grotesk']">MenuRápido</span>
+            <span className="text-lg font-bold font-['Space_Grotesk']">Menu</span>
             <span className="ml-1 text-[10px] font-semibold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">SUPER</span>
           </div>
         </Link>
